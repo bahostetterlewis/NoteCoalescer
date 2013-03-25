@@ -42,33 +42,29 @@ def createOutput(outfile, outData):
     if not outfile.endswith('.md'):
         outfile += '.md'
 
-    footnoteDict = {}
+    footnotes = []
     finalWriteList = []
     curFootNote = 1
 
     for data in outData:
         text = data.text.rstrip()
-        if not data.linkto in footnoteDict:
-            footnoteDict[data.linkto] = curFootNote
-            curFootNote += 1
-        text += '[^%i]\n' % footnoteDict[data.linkto]
+        footnotes.append(data.linkto)
+        text += '[^%i]\n' % curFootNote
         finalWriteList.append(text)
         finalWriteList.append('\n------------\n')
+        curFootNote += 1
 
     finalWriteList.pop()  # get rid of uneeded linebreak
-
-    footnotes = [
-        "[^%i]: [%s](%s)\n" % (i+1, v, v + '.html')
-        for i, v
-        in enumerate(sorted(footnoteDict, key=lambda key: footnoteDict[key]))
-    ]
 
     fileHandle = open(outfile, 'w')
     for line in finalWriteList:
         fileHandle.write(line)
 
-    for footnote in footnotes:
-        fileHandle.write(footnote)
+    fileHandle.write("\n\n\n")
+
+    for i, footnote in enumerate(footnotes):
+        noteText = "[^%i]:[%s](%s)\n" % (i+1, footnote, footnote + '.html')
+        fileHandle.write(noteText)
 
     fileHandle.close()
 
