@@ -10,7 +10,7 @@ grouper = re.compile(
     re.MULTILINE | re.DOTALL,
     )
 
-Note = namedtuple('Note', ['level', 'text', 'linkto'])
+Note = namedtuple('Note', ['level', 'text', 'linkto', 'title'])
 
 
 def fileWithoutExtension(filename):
@@ -28,10 +28,12 @@ def parseInFile(inFile):
         fileData = fileHandle.read()
         fileName = fileWithoutExtension(inFile)
         for it in grouper.finditer(fileData):
+            text = it.group('text').strip()
             tmp = Note(
                 level=it.group('level'),
-                text=it.group('text'),
+                text=text,
                 linkto=fileName,
+                title=text.split('\n')[0].replace('#', '').replace('*', ''),
                 )
             parseList.append(tmp)
         fileHandle.close()
@@ -51,7 +53,7 @@ def createOutput(outfile, outData):
     for data in outData:
         text = data.text.rstrip()
         text += '[^%i]\n' % curFootNote
-        footnotes.append(data.linkto)
+        footnotes.append((data.title, data.linkto))
         finalWriteList.append(text)
         finalWriteList.append('\n------------\n')
         curFootNote += 1
@@ -60,7 +62,7 @@ def createOutput(outfile, outData):
 
     # turn footnotes into markdown style footnotes
     for i, footnote in enumerate(footnotes):
-        noteText = "[^%i]:[%s](%s)\n" % (i+1, footnote, footnote + '.html')
+        noteText = "[^%i]:[%s](%s)\n" % (i+1, footnote[0], footnote[1] + '.html')
         markdownFootnotes.append(noteText)
 
     # combine all strings into a single string to be parsed
