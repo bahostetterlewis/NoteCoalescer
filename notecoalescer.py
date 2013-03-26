@@ -13,8 +13,8 @@ grouper = re.compile(
 Note = namedtuple('Note', ['level', 'text', 'linkto', 'title'])
 
 
-def fileWithoutExtension(filename):
-    return splitext(basename(filename))[0]
+def getHtmlFileName(filename):
+    return splitext(basename(filename))[0] + '.html'
 
 
 def parseInFile(inFile):
@@ -26,7 +26,7 @@ def parseInFile(inFile):
         print("could not open file:", inFile)
     else:
         fileData = fileHandle.read()
-        fileName = fileWithoutExtension(inFile)
+        fileName = getHtmlFileName(inFile)
         for it in grouper.finditer(fileData):
             text = it.group('text').strip()
             tmp = Note(
@@ -62,7 +62,7 @@ def createOutput(outfile, outData):
 
     # turn footnotes into markdown style footnotes
     for i, footnote in enumerate(footnotes, 1):
-        noteText = "[^%i]:[%s](%s)\n" % (i, footnote[0], footnote[1] + '.html')
+        noteText = "[^%i]:[%s](%s)\n" % (i, footnote[0], footnote[1])
         markdownFootnotes.append(noteText)
 
     # combine all strings into a single string to be parsed
