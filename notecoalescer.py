@@ -61,8 +61,8 @@ def createOutput(outfile, outData):
     finalWriteList.pop()  # get rid of uneeded linebreak
 
     # turn footnotes into markdown style footnotes
-    for i, footnote in enumerate(footnotes):
-        noteText = "[^%i]:[%s](%s)\n" % (i+1, footnote[0], footnote[1] + '.html')
+    for i, footnote in enumerate(footnotes, 1):
+        noteText = "[^%i]:[%s](%s)\n" % (i, footnote[0], footnote[1] + '.html')
         markdownFootnotes.append(noteText)
 
     # combine all strings into a single string to be parsed
