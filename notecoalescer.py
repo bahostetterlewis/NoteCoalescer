@@ -3,6 +3,7 @@ from os.path import basename
 from os.path import splitext
 import argparse
 import re
+import markdown2
 
 grouper = re.compile(
     "<!--Important(?P<level>[0-9]+)-->(?P<text>((?!<!--Important[0-9]+-->).)*)<!--EndImportant-->",
@@ -39,33 +40,40 @@ def parseInFile(inFile):
 
 
 def createOutput(outfile, outData):
-    if not outfile.endswith('.md'):
-        outfile += '.md'
+    if not outfile.endswith('.html'):
+        outfile += '.html'
 
-    footnotes = []
     finalWriteList = []
+    footnotes = []
     curFootNote = 1
+    markdownFootnotes = []
 
     for data in outData:
         text = data.text.rstrip()
-        footnotes.append(data.linkto)
         text += '[^%i]\n' % curFootNote
+        footnotes.append(data.linkto)
         finalWriteList.append(text)
         finalWriteList.append('\n------------\n')
         curFootNote += 1
 
     finalWriteList.pop()  # get rid of uneeded linebreak
 
-    fileHandle = open(outfile, 'w')
-    for line in finalWriteList:
-        fileHandle.write(line)
-
-    fileHandle.write("\n\n\n")
-
+    # turn footnotes into markdown style footnotes
     for i, footnote in enumerate(footnotes):
         noteText = "[^%i]:[%s](%s)\n" % (i+1, footnote, footnote + '.html')
-        fileHandle.write(noteText)
+        markdownFootnotes.append(noteText)
 
+    # combine all strings into a single string to be parsed
+    finalText = "%s%s%s" % (
+        ''.join(finalWriteList),
+        '\n\n\n',
+        ''.join(markdownFootnotes)
+        )
+
+    finalText = markdown2.markdown(finalText, extras=['footnotes'])
+
+    fileHandle = open(outfile, 'w')
+    fileHandle.write(finalText)
     fileHandle.close()
 
 
